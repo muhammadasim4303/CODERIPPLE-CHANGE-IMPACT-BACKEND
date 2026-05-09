@@ -74,8 +74,12 @@ def _get_or_clone(repo_full_name: str) -> str:
         del _clone_cache[repo_full_name]
 
     clone_dir = tempfile.mkdtemp(prefix="cr_")
-    url = f"https://github.com/{repo_full_name}.git"
-    logger.info("Cloning %s (shallow) …", url)
+    gh_token = os.environ.get("GITHUB_TOKEN", "").strip()
+    if gh_token:
+        url = f"https://{gh_token}@github.com/{repo_full_name}.git"
+    else:
+        url = f"https://github.com/{repo_full_name}.git"
+    logger.info("Cloning %s (shallow) …", f"https://github.com/{repo_full_name}.git")
 
     try:
         subprocess.run(
