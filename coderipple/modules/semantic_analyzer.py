@@ -158,6 +158,9 @@ class GraphCodeBERTEmbedder:
         return cls._instance
 
     def _try_load(self) -> None:
+        import os
+        if os.environ.get("DISABLE_GRAPHCODEBERT", "false").lower() == "true":
+            raise RuntimeError("GraphCodeBERT disabled via environment variable")
         from transformers import AutoTokenizer, AutoModel
         logger.info("Loading GraphCodeBERT …")
         self.tokenizer = AutoTokenizer.from_pretrained(self.MODEL_NAME)
