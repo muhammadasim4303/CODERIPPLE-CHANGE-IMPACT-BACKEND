@@ -1,0 +1,17 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+.git/
+.gitignore
+.vscode/
+.idea/
+.DS_Store
+Dockerfile
+.dockerignore
+test_output.json
+test_output_utf8.json
