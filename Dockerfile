@@ -16,11 +16,6 @@ RUN pip install --no-cache-dir torch>=2.6.0 --index-url https://download.pytorch
 # Copy the rest of the application code
 COPY . .
 
-# IMPORTANT OPTIMIZATION:
-# Pre-download the GraphCodeBERT model into the Docker image during the build process.
-# This prevents the 500MB download from occurring on the first request, ensuring lightning-fast cold starts.
-RUN python -c "from coderipple.modules.semantic_analyzer import GraphCodeBERTEmbedder; GraphCodeBERTEmbedder.get()"
-
 # Ensure Flask knows it's behind a proxy
 ENV PORT 8080
 
