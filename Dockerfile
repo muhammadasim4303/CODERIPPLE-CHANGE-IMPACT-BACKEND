@@ -10,7 +10,7 @@ WORKDIR /app
 # Copy requirements and install them
 COPY requirements.txt .
 # Install CPU-only PyTorch first to save massive disk space (~2GB) and RAM
-RUN pip install --no-cache-dir torch>=2.2.0 --index-url https://download.pytorch.org/whl/cpu && \
+RUN pip install --no-cache-dir torch>=2.6.0 --index-url https://download.pytorch.org/whl/cpu && \
     pip install --no-cache-dir -r requirements.txt
 
 # Copy the rest of the application code
@@ -23,6 +23,11 @@ RUN python -c "from coderipple.modules.semantic_analyzer import GraphCodeBERTEmb
 
 # Ensure Flask knows it's behind a proxy
 ENV PORT 8080
+
+# CPU Optimizations to prevent thread thrashing on 2 vCPUs
+ENV OMP_NUM_THREADS=2
+ENV MKL_NUM_THREADS=2
+ENV OPENBLAS_NUM_THREADS=2
 
 # Run gunicorn with 1 worker and 8 threads. 
 # We set timeout to 0 because Cloud Run handles scaling and timeouts dynamically.

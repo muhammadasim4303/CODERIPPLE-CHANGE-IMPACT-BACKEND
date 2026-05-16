@@ -164,12 +164,21 @@ class GraphCodeBERTEmbedder:
         from transformers import AutoTokenizer, AutoModel
         logger.info("Loading GraphCodeBERT …")
         self.tokenizer = AutoTokenizer.from_pretrained(self.MODEL_NAME)
-        self.model     = AutoModel.from_pretrained(self.MODEL_NAME)
+        self.model = AutoModel.from_pretrained(self.MODEL_NAME)
         self.model.eval()
+        
+        # CPU OPTIMIZATION: Dynamically quantize Linear layers to INT8
+        # This makes CPU inference ~2-3x faster and significantly reduces RAM usage.
+        import torch
+        if self.device == "cpu":
+            self.model = torch.quantization.quantize_dynamic(
+                self.model, {torch.nn.Linear}, dtype=torch.qint8
+            )
+            
         self.model.to(self.device)
         self._loaded = True
         self._mode   = "graphcodebert_base"
-        logger.info("GraphCodeBERT loaded on %s", self.device)
+        logger.info("GraphCodeBERT loaded on %s (quantized=%s)", self.device, str(self.device == "cpu"))
 
     #  Public API 
 
