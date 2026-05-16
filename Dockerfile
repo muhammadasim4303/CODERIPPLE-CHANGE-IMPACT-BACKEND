@@ -9,7 +9,9 @@ WORKDIR /app
 
 # Copy requirements and install them
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# Install CPU-only PyTorch first to save massive disk space (~2GB) and RAM
+RUN pip install --no-cache-dir torch>=2.2.0 --index-url https://download.pytorch.org/whl/cpu && \
+    pip install --no-cache-dir -r requirements.txt
 
 # Copy the rest of the application code
 COPY . .
