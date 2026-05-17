@@ -325,12 +325,18 @@ class CommitParser:
             ret_changed = self._return_changed(old_src_str, new_src_str)
 
             # Fix: calculate logic signal on function-specific diff to avoid poisoning
-            # from other changes in the same file.
-            fn_diff = "".join(difflib.unified_diff(
-                (old_src_str or "").splitlines(keepends=True),
-                (new_src_str or "").splitlines(keepends=True),
-                n=3
-            ))
+            # from other changes in the same file. Skip difflib if function is massive
+            # to avoid O(N^2) hanging.
+            old_lines_len = len((old_src_str or "").splitlines())
+            new_lines_len = len((new_src_str or "").splitlines())
+            if old_lines_len + new_lines_len < 3000:
+                fn_diff = "".join(difflib.unified_diff(
+                    (old_src_str or "").splitlines(keepends=True),
+                    (new_src_str or "").splitlines(keepends=True),
+                    n=3
+                ))
+            else:
+                fn_diff = fd.patch
             logic_signal = detect_patch_logic_signals(fn_diff)
 
             results.append(ChangedFunction(

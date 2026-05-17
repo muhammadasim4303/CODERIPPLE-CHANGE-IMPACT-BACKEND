@@ -114,11 +114,19 @@ class CommitAnalyzer:
             removed = sum(1 for l in fd.patch.splitlines() if l.startswith("-") and not l.startswith("---"))
             
             # Generate a clean diff for logic signal detection
-            clean_diff = "".join(difflib.unified_diff(
-                (old_src or "").splitlines(keepends=True),
-                (new_src or "").splitlines(keepends=True),
-                n=3
-            ))
+            # Skip difflib if file is massive to avoid O(N^2) hanging.
+            old_lines_len = len((old_src or "").splitlines())
+            new_lines_len = len((new_src or "").splitlines())
+            
+            if old_lines_len + new_lines_len < 3000:
+                clean_diff = "".join(difflib.unified_diff(
+                    (old_src or "").splitlines(keepends=True),
+                    (new_src or "").splitlines(keepends=True),
+                    n=3
+                ))
+            else:
+                clean_diff = fd.patch
+                
             logic_signal = detect_patch_logic_signals(clean_diff)
 
             results.append(ChangedFunction(
