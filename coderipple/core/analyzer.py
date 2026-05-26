@@ -50,7 +50,7 @@ class CommitAnalyzer:
         self._ripple: RippleEngine | None = None
         # Cap: skip semantic embedding beyond this many functions to avoid
         # multi-hour runs on giant minified JS bundles.
-        self.max_functions = int(os.environ.get("CR_MAX_FUNCTIONS", 500))
+        self.max_functions = int(os.environ.get("CR_MAX_FUNCTIONS", 25))
 
     #  Graph lifecycle 
 
