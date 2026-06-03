@@ -24,6 +24,6 @@ ENV OMP_NUM_THREADS=2
 ENV MKL_NUM_THREADS=2
 ENV OPENBLAS_NUM_THREADS=2
 
-# Run gunicorn with 1 worker and 8 threads. 
+# Run gunicorn with 1 worker and 1 thread. 
 # We set timeout to 0 because Cloud Run handles scaling and timeouts dynamically.
-CMD exec gunicorn --bind :$PORT --workers 1 --threads 8 --timeout 0 coderipple.api.api:app
+CMD exec gunicorn --bind :$PORT --workers 1 --threads 1 --timeout 0 coderipple.api.api:app

@@ -161,19 +161,6 @@ class GraphCodeBERTEmbedder:
         import os
         if os.environ.get("DISABLE_GRAPHCODEBERT", "false").lower() == "true":
             raise RuntimeError("GraphCodeBERT disabled via environment variable")
-        
-        # Monkeypatch transformers security checks to bypass PyTorch version parsing bugs
-        try:
-            import transformers.utils.import_utils as import_utils
-            import_utils.check_torch_load_is_safe = lambda *args, **kwargs: None
-            import_utils.is_torch_greater_or_equal = lambda *args, **kwargs: True
-            
-            import transformers.utils as utils
-            utils.check_torch_load_is_safe = lambda *args, **kwargs: None
-            utils.is_torch_greater_or_equal = lambda *args, **kwargs: True
-        except Exception as exc:
-            logger.warning("Failed to monkeypatch transformers checks: %s", exc)
-
         from transformers import AutoTokenizer, AutoModel
         logger.info("Loading GraphCodeBERT …")
         self.tokenizer = AutoTokenizer.from_pretrained(self.MODEL_NAME)

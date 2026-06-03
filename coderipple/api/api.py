@@ -34,9 +34,12 @@ logger = logging.getLogger(__name__)
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
 
+import threading
+
 #  Caches 
 _analyzer_cache: dict[str, CommitAnalyzer] = {}
 _clone_cache:    dict[str, str]            = {}   # repoFullName → local path
+_analysis_lock = threading.Lock()
 
 
 #  Warm up GraphCodeBERT at startup so first request isn't slow 
@@ -179,13 +182,14 @@ def change_impact_commit():
     except (ValueError, RuntimeError) as exc:
         return error(str(exc))
 
-    try:
-        analyzer = _get_analyzer(repo_path)
-        result   = analyzer.analyze(commit_hash)
-        return jsonify(result)
-    except Exception as exc:
-        logger.exception("change-impact-commit failed for %s @ %s", repo_path, commit_hash)
-        return error(f"Analysis failed: {exc}", 500)
+    with _analysis_lock:
+        try:
+            analyzer = _get_analyzer(repo_path)
+            result   = analyzer.analyze(commit_hash)
+            return jsonify(result)
+        except Exception as exc:
+            logger.exception("change-impact-commit failed for %s @ %s", repo_path, commit_hash)
+            return error(f"Analysis failed: {exc}", 500)
 
 
 @app.route("/batch-impact", methods=["POST"])
@@ -201,15 +205,16 @@ def batch_impact():
     except (ValueError, RuntimeError) as exc:
         return error(str(exc))
 
-    analyzer = _get_analyzer(repo_path)
-    results  = []
-    for sha in commit_hashes[:20]:
-        try:
-            results.append(analyzer.analyze(sha))
-        except Exception as exc:
-            results.append({"commit": sha, "error": str(exc)})
+    with _analysis_lock:
+        analyzer = _get_analyzer(repo_path)
+        results  = []
+        for sha in commit_hashes[:20]:
+            try:
+                results.append(analyzer.analyze(sha))
+            except Exception as exc:
+                results.append({"commit": sha, "error": str(exc)})
 
-    return jsonify({"repository": repo_path, "results": results})
+        return jsonify({"repository": repo_path, "results": results})
 
 
 #  Entry point 
