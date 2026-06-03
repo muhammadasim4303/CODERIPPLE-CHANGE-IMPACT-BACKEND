@@ -5,7 +5,6 @@ Flask REST API for CodeRipple Semantic Change Impact Analyzer.
 
 Performance optimizations:
   - GraphCodeBERT is loaded ONCE at startup (not per request)
-  - git clone uses --depth=10 (only recent history needed)
   - Clone cache persists for the lifetime of the server process
   - Analyzer cache persists dependency graph per repo
 """
@@ -64,7 +63,6 @@ def _get_or_clone(repo_full_name: str) -> str:
     """
     Returns a local path to the repo.
     Clones from GitHub if not already cached.
-    Uses --depth=10 — fast and enough for recent commits.
     """
     if repo_full_name in _clone_cache:
         cached = _clone_cache[repo_full_name]
@@ -79,11 +77,11 @@ def _get_or_clone(repo_full_name: str) -> str:
         url = f"https://{gh_token}@github.com/{repo_full_name}.git"
     else:
         url = f"https://github.com/{repo_full_name}.git"
-    logger.info("Cloning %s (shallow) …", f"https://github.com/{repo_full_name}.git")
+    logger.info("Cloning %s …", f"https://github.com/{repo_full_name}.git")
 
     try:
         subprocess.run(
-            ["git", "clone", "--depth=50", url, clone_dir],
+            ["git", "clone", url, clone_dir],
             check=True,
             capture_output=True,
             text=True,

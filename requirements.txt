@@ -1,6 +1,6 @@
 # CodeRipple — Semantic Change Impact Analyzer
 # Core ML / NLP
-transformers>=4.38.0
+transformers==4.46.3
 
 # AST parsing
 tree-sitter>=0.22.0
